@@ -1,0 +1,16 @@
+﻿{
+  "name": "SAVOR AI 智能飲食決策",
+  "short_name": "SAVOR",
+  "description": "用現有食材、口味、營養目標同預算，決定今日食乜。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#514439",
+  "theme_color": "#514439",
+  "orientation": "portrait-primary",
+  "lang": "zh-HK",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
+

@@ -19,6 +19,8 @@ export default function MotionSystem() {
       if (disposed) return;
 
       gsap.registerPlugin(ScrollTrigger);
+      gsap.config({ nullTargetWarn: false });
+      gsap.ticker.lagSmoothing(1000, 33);
 
       const overlay = overlayRef.current;
       if (!overlay) return;

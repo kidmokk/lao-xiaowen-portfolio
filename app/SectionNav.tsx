@@ -20,7 +20,9 @@ export default function SectionNav() {
     const measureSections = () => {
       offsets = items.flatMap((item) => {
         const section = document.getElementById(item.id);
-        return section ? [{ id: item.id, top: section.offsetTop }] : [];
+        return section
+          ? [{ id: item.id, top: section.getBoundingClientRect().top + window.scrollY }]
+          : [];
       });
     };
 
@@ -45,17 +47,33 @@ export default function SectionNav() {
       scheduleUpdate();
     };
 
+    const handleNavClick = (event: MouseEvent) => {
+      const link = (event.target as HTMLElement).closest<HTMLAnchorElement>("a[href^='#']");
+      if (!link) return;
+      const id = link.getAttribute("href")?.slice(1);
+      if (!id) return;
+      const section = document.getElementById(id);
+      if (!section) return;
+
+      event.preventDefault();
+      setActiveId(id);
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.history.replaceState(null, "", `#${id}`);
+    };
+
     measureSections();
     updateActiveSection();
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
     window.addEventListener("resize", handleLayoutChange);
     window.addEventListener("load", handleLayoutChange, { once: true });
+    document.querySelector(".section-nav")?.addEventListener("click", handleNavClick);
 
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", scheduleUpdate);
       window.removeEventListener("resize", handleLayoutChange);
       window.removeEventListener("load", handleLayoutChange);
+      document.querySelector(".section-nav")?.removeEventListener("click", handleNavClick);
     };
   }, []);
 

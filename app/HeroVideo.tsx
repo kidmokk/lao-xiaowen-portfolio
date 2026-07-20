@@ -39,7 +39,7 @@ export default function HeroVideo() {
     const delay = window.setTimeout(() => {
       ready = true;
       syncPlayback();
-    }, 1200);
+    }, 700);
 
     observer.observe(hero);
     document.addEventListener("visibilitychange", handleVisibility);

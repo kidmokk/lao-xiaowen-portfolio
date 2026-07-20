@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-const appUrl = "https://savor-ai-pillnav-4317.harrisedward3373131.chatgpt.site";
+const appUrl = "/savor-ai/";
 
 const gameUiScreens = [
   { src: "/game-ui-character.webp", title: "角色选择", label: "CHARACTER SELECT" },

@@ -16,6 +16,10 @@ export default function ProjectLoopVideo({ src, poster }: ProjectLoopVideoProps)
     const video = videoRef.current;
     if (!video) return;
 
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
+    if (reducedMotion || saveData) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         isNearRef.current = entry.isIntersecting;
@@ -29,9 +33,19 @@ export default function ProjectLoopVideo({ src, poster }: ProjectLoopVideoProps)
       { rootMargin: "320px 0px", threshold: 0.01 },
     );
 
+    const handleVisibility = () => {
+      if (document.visibilityState !== "visible") video.pause();
+      else if (isNearRef.current && shouldLoad) void video.play().catch(() => undefined);
+    };
+
     observer.observe(video);
-    return () => observer.disconnect();
-  }, []);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibility);
+      video.pause();
+    };
+  }, [shouldLoad]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -47,7 +61,6 @@ export default function ProjectLoopVideo({ src, poster }: ProjectLoopVideoProps)
       poster={poster}
       muted
       loop
-      autoPlay
       playsInline
       preload={shouldLoad ? "auto" : "none"}
       onCanPlay={(event) => {

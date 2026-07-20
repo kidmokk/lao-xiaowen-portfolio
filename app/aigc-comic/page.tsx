@@ -15,8 +15,8 @@ const series = [
     summary: "以人物情绪作为叙事入口，将近景表演与泼墨式战斗空间连接成同一段东方动画语境。",
     tone: "ink",
     films: [
-      { src: "/aigc-ink-01.mp4", no: "01—A", title: "人物关系与情绪近景", note: "CHARACTER / EMOTION" },
-      { src: "/aigc-ink-02.mp4", no: "01—B", title: "水墨战斗空间", note: "INK / ACTION" },
+      { src: "/aigc-ink-01.mp4", no: "01—A", title: "人物关系与情绪近景", note: "CHARACTER / EMOTION", poster: "/aigc-comic-story.webp" },
+      { src: "/aigc-ink-02.mp4", no: "01—B", title: "水墨战斗空间", note: "INK / ACTION", poster: "/aigc-comic-action.webp" },
     ],
   },
   {
@@ -27,8 +27,8 @@ const series = [
     summary: "用柔和线条、温暖色温与缓慢镜头建立生活感，让连续片段保持自然、安静的呼吸节奏。",
     tone: "healing",
     films: [
-      { src: "/aigc-healing-01.mp4", no: "02—A", title: "暖调日常・上篇", note: "OPENING / 00—15S" },
-      { src: "/aigc-healing-02.mp4", no: "02—B", title: "暖调日常・续篇", note: "CONTINUATION / 16—30S" },
+      { src: "/aigc-healing-01.mp4", no: "02—A", title: "暖调日常・上篇", note: "OPENING / 00—15S", poster: "/aigc-comic-story.webp" },
+      { src: "/aigc-healing-02.mp4", no: "02—B", title: "暖调日常・续篇", note: "CONTINUATION / 16—30S", poster: "/aigc-comic-action.webp" },
     ],
   },
   {
@@ -102,7 +102,7 @@ export default function AigcComicPage() {
               {item.films.map((film, index) => (
                 <figure className={`aigc-film aigc-film-${index + 1}`} key={film.src}>
                   <div className="aigc-film-frame">
-                    <ProjectLoopVideo src={film.src} poster={"poster" in film ? film.poster : undefined} />
+                    <ProjectLoopVideo src={film.src} poster={film.poster} />
                     <span className="aigc-film-status">AUTO LOOP ●</span>
                     <i className="aigc-film-corner aigc-film-corner-a" />
                     <i className="aigc-film-corner aigc-film-corner-b" />

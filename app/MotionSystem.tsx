@@ -9,6 +9,7 @@ export default function MotionSystem() {
   useEffect(() => {
     let disposed = false;
     let cleanup = () => {};
+    let failSafeTimer: number | undefined;
 
     void (async () => {
       const [{ gsap }, { ScrollTrigger }] = await Promise.all([
@@ -49,11 +50,16 @@ export default function MotionSystem() {
         }
 
         document.documentElement.classList.add("is-opening");
+        failSafeTimer = window.setTimeout(() => {
+          document.documentElement.classList.remove("is-opening");
+          overlay.style.display = "none";
+        }, 5200);
 
         const counter = { value: 0 };
         const opening = gsap.timeline({
           defaults: { ease: "power4.out" },
           onComplete: () => {
+            if (failSafeTimer) window.clearTimeout(failSafeTimer);
             document.documentElement.classList.remove("is-opening");
             gsap.set(overlay, { display: "none" });
             ScrollTrigger.refresh();
@@ -398,6 +404,7 @@ export default function MotionSystem() {
       window.addEventListener("load", refresh, { once: true });
 
       cleanup = () => {
+        if (failSafeTimer) window.clearTimeout(failSafeTimer);
         document.documentElement.classList.remove("is-opening");
         window.removeEventListener("load", refresh);
         media.revert();

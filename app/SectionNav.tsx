@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import type { MouseEvent } from "react";
 
 const items = [
   { id: "top", no: "01", label: "首页" },
@@ -11,91 +11,37 @@ const items = [
 ];
 
 export default function SectionNav() {
-  const [activeId, setActiveId] = useState("top");
+  const jumpToSection = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
+    const section = document.getElementById(id);
+    if (!section) return;
 
-  useEffect(() => {
-    let frame = 0;
-    let offsets: Array<{ id: string; top: number }> = [];
-
-    const measureSections = () => {
-      offsets = items.flatMap((item) => {
-        const section = document.getElementById(item.id);
-        return section
-          ? [{ id: item.id, top: section.getBoundingClientRect().top + window.scrollY }]
-          : [];
-      });
-    };
-
-    const updateActiveSection = () => {
-      const marker = window.scrollY + window.innerHeight * 0.36;
-      let current = items[0].id;
-
-      for (const item of offsets) {
-        if (item.top <= marker) current = item.id;
-      }
-
-      setActiveId((previous) => previous === current ? previous : current);
-    };
-
-    const scheduleUpdate = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(updateActiveSection);
-    };
-
-    const handleLayoutChange = () => {
-      measureSections();
-      scheduleUpdate();
-    };
-
-    const handleNavClick = (event: MouseEvent) => {
-      const link = (event.target as HTMLElement).closest<HTMLAnchorElement>("a[href^='#']");
-      if (!link) return;
-      const id = link.getAttribute("href")?.slice(1);
-      if (!id) return;
-      const section = document.getElementById(id);
-      if (!section) return;
-
-      event.preventDefault();
-      setActiveId(id);
-      section.scrollIntoView({ behavior: "smooth", block: "start" });
-    };
-
-    measureSections();
-    updateActiveSection();
-    window.addEventListener("scroll", scheduleUpdate, { passive: true });
-    window.addEventListener("resize", handleLayoutChange);
-    window.addEventListener("load", handleLayoutChange, { once: true });
-    document.querySelector(".section-nav")?.addEventListener("click", handleNavClick);
-
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", scheduleUpdate);
-      window.removeEventListener("resize", handleLayoutChange);
-      window.removeEventListener("load", handleLayoutChange);
-      document.querySelector(".section-nav")?.removeEventListener("click", handleNavClick);
-    };
-  }, []);
+    event.preventDefault();
+    document.documentElement.classList.remove("is-opening");
+    const openingOverlay = document.querySelector<HTMLElement>(".opening-overlay");
+    if (openingOverlay) openingOverlay.style.display = "none";
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    section.scrollIntoView({
+      behavior: reducedMotion ? "auto" : "smooth",
+      block: "start",
+    });
+    event.currentTarget.blur();
+  };
 
   return (
     <nav className="section-nav" aria-label="作品集章节导航">
       <div className="section-nav-inner shell">
-        <a className="section-nav-brand" href="#top" aria-label="返回首页">
+        <a className="section-nav-brand" href="#top" aria-label="返回首页" onClick={(event) => jumpToSection(event, "top")}>
           <span>✳</span> LXW / INDEX
         </a>
         <div className="section-nav-links">
           {items.map((item) => (
-            <a
-              className={activeId === item.id ? "is-active" : undefined}
-              href={`#${item.id}`}
-              aria-current={activeId === item.id ? "location" : undefined}
-              key={item.id}
-            >
+            <a href={`#${item.id}`} onClick={(event) => jumpToSection(event, item.id)} key={item.id}>
               <small>{item.no}</small>
               <span>{item.label}</span>
             </a>
           ))}
         </div>
-        <span className="section-nav-note">SCROLL / MENU ↘</span>
+        <span className="section-nav-note">JUMP / MENU ↘</span>
       </div>
     </nav>
   );

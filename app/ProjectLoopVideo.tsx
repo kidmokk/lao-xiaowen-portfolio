@@ -10,6 +10,7 @@ type ProjectLoopVideoProps = {
 export default function ProjectLoopVideo({ src, poster }: ProjectLoopVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const isNearRef = useRef(false);
+  const shouldLoadRef = useRef(false);
   const [shouldLoad, setShouldLoad] = useState(false);
 
   useEffect(() => {
@@ -24,18 +25,22 @@ export default function ProjectLoopVideo({ src, poster }: ProjectLoopVideoProps)
       ([entry]) => {
         isNearRef.current = entry.isIntersecting;
         if (entry.isIntersecting) {
-          setShouldLoad(true);
-          void video.play().catch(() => undefined);
+          if (!shouldLoadRef.current) {
+            shouldLoadRef.current = true;
+            setShouldLoad(true);
+          } else {
+            void video.play().catch(() => undefined);
+          }
         } else {
           video.pause();
         }
       },
-      { rootMargin: "320px 0px", threshold: 0.01 },
+      { rootMargin: "96px 0px", threshold: 0.02 },
     );
 
     const handleVisibility = () => {
       if (document.visibilityState !== "visible") video.pause();
-      else if (isNearRef.current && shouldLoad) void video.play().catch(() => undefined);
+      else if (isNearRef.current && shouldLoadRef.current) void video.play().catch(() => undefined);
     };
 
     observer.observe(video);
@@ -45,7 +50,7 @@ export default function ProjectLoopVideo({ src, poster }: ProjectLoopVideoProps)
       document.removeEventListener("visibilitychange", handleVisibility);
       video.pause();
     };
-  }, [shouldLoad]);
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -62,7 +67,7 @@ export default function ProjectLoopVideo({ src, poster }: ProjectLoopVideoProps)
       muted
       loop
       playsInline
-      preload={shouldLoad ? "auto" : "none"}
+      preload={shouldLoad ? "metadata" : "none"}
       onCanPlay={(event) => {
         if (isNearRef.current) void event.currentTarget.play().catch(() => undefined);
       }}

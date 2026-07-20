@@ -1,5 +1,5 @@
 const CACHE = "savor-ai-v10";
-const CORE = ["./", "./manifest.webmanifest", "./savor-food-hero.png"];
+const CORE = ["./", "./manifest.webmanifest", "./savor-food-hero.webp"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)));

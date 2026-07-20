@@ -1031,8 +1031,7 @@ body::before {
 
 /* STICKY GRAFFITI CHAPTER NAV */
 .section-nav {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 9000;
   color: var(--ink);
   background: rgba(244, 244, 241, .94);

@@ -1,5 +1,5 @@
-﻿const CACHE = "savor-ai-v9";
-const CORE = ["./", "./savor-ai/manifest.webmanifest", "./savor-ai/savor-food-hero.png"];
+const CACHE = "savor-ai-v10";
+const CORE = ["./", "./manifest.webmanifest", "./savor-food-hero.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)));
@@ -17,6 +17,5 @@ self.addEventListener("fetch", (event) => {
     const copy = response.clone();
     caches.open(CACHE).then((cache) => cache.put(event.request, copy));
     return response;
-  }).catch(() => caches.match(event.request).then((cached) => cached || caches.match("/"))));
+  }).catch(() => caches.match(event.request).then((cached) => cached || caches.match("./"))));
 });
-

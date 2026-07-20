@@ -58,7 +58,6 @@ export default function SectionNav() {
       event.preventDefault();
       setActiveId(id);
       section.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.history.replaceState(null, "", `#${id}`);
     };
 
     measureSections();

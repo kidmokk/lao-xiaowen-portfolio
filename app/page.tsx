@@ -68,9 +68,9 @@ const projects = [
     title: "准落地企业官网",
     subtitle: "从品牌梳理、UI/UX 设计到开发上线的完整企业官网方案",
     tags: ["CORPORATE WEBSITE", "UI / UX", "LAUNCH"],
-    href: "https://haihuitong-pipe.harrisedward3373131.chatgpt.site",
-    external: true,
-    ariaLabel: "打开海汇通塑料管企业官网（新窗口）",
+    href: "/corporate-site/",
+    external: false,
+    ariaLabel: "打开海汇通塑料管企业官网",
     className: "visual-web",
     coverLabel: "CORPORATE × WEBSITE",
     visual: (

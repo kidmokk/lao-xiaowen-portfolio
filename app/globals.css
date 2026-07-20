@@ -1029,10 +1029,10 @@ body::before {
   to { transform: translateX(-50%); }
 }
 
-/* STICKY GRAFFITI CHAPTER NAV */
+/* GRAFFITI CHAPTER NAV — it participates in normal document flow. */
 .section-nav {
   position: relative;
-  z-index: 9000;
+  z-index: 30;
   color: var(--ink);
   background: rgba(244, 244, 241, .94);
   border-block: 2px solid var(--ink);
@@ -1155,7 +1155,7 @@ body::before {
 #work,
 #strengths,
 #contact {
-  scroll-margin-top: 96px;
+  scroll-margin-top: 24px;
 }
 
 @media (hover: hover) {
@@ -1895,7 +1895,8 @@ body::before {
 /* UI / APP CASE STUDY */
 .case-page {
   min-height: 100vh;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
   color: #171717;
   background: #f4f3ef;
 }
@@ -2496,7 +2497,8 @@ body::before {
 /* POSTER × IP CASE PAGE */
 .poster-page {
   min-height: 100vh;
-  overflow: clip;
+  overflow-x: clip;
+  overflow-y: visible;
   color: #181818;
   background: #f3eee4;
   font-family: var(--sans);
@@ -2755,7 +2757,8 @@ body::before {
 /* AIGC comic and motion case-study page. */
 .aigc-page {
   min-height: 100vh;
-  overflow: clip;
+  overflow-x: clip;
+  overflow-y: visible;
   background: #f4f4f1;
   color: #181818;
 }

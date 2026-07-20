@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@fontsource/zcool-kuaile";
 import "./globals.css";
+import ScrollNavigation from "./ScrollNavigation";
 
 export const metadata: Metadata = {
   title: "劳校文｜视觉设计师",
@@ -10,7 +11,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body>
+        <ScrollNavigation />
+        {children}
+      </body>
     </html>
   );
 }

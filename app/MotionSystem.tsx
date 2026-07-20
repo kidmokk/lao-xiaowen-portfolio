@@ -9,7 +9,14 @@ export default function MotionSystem() {
   useEffect(() => {
     let disposed = false;
     let cleanup = () => {};
-    let failSafeTimer: number | undefined;
+    let openingFailsafe: ReturnType<typeof setTimeout> | undefined;
+
+    const releaseOpeningLock = () => {
+      document.documentElement.classList.remove("is-opening");
+      document.body.classList.remove("is-opening");
+      document.documentElement.style.removeProperty("overflow");
+      document.body.style.removeProperty("overflow");
+    };
 
     void (async () => {
       const [{ gsap }, { ScrollTrigger }] = await Promise.all([
@@ -20,8 +27,6 @@ export default function MotionSystem() {
       if (disposed) return;
 
       gsap.registerPlugin(ScrollTrigger);
-      gsap.config({ nullTargetWarn: false });
-      gsap.ticker.lagSmoothing(1000, 33);
 
       const overlay = overlayRef.current;
       if (!overlay) return;
@@ -45,22 +50,24 @@ export default function MotionSystem() {
         };
 
         if (reduced || !motion) {
+          releaseOpeningLock();
           gsap.set(overlay, { display: "none" });
           return;
         }
 
         document.documentElement.classList.add("is-opening");
-        failSafeTimer = window.setTimeout(() => {
-          document.documentElement.classList.remove("is-opening");
-          overlay.style.display = "none";
+        openingFailsafe = window.setTimeout(() => {
+          releaseOpeningLock();
+          gsap.set(overlay, { display: "none" });
+          ScrollTrigger.refresh();
         }, 5200);
 
         const counter = { value: 0 };
         const opening = gsap.timeline({
           defaults: { ease: "power4.out" },
           onComplete: () => {
-            if (failSafeTimer) window.clearTimeout(failSafeTimer);
-            document.documentElement.classList.remove("is-opening");
+            if (openingFailsafe) window.clearTimeout(openingFailsafe);
+            releaseOpeningLock();
             gsap.set(overlay, { display: "none" });
             ScrollTrigger.refresh();
           },
@@ -404,8 +411,9 @@ export default function MotionSystem() {
       window.addEventListener("load", refresh, { once: true });
 
       cleanup = () => {
-        if (failSafeTimer) window.clearTimeout(failSafeTimer);
         document.documentElement.classList.remove("is-opening");
+        releaseOpeningLock();
+        if (openingFailsafe) window.clearTimeout(openingFailsafe);
         window.removeEventListener("load", refresh);
         media.revert();
       };

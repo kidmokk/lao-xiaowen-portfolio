@@ -1,7 +1,5 @@
 "use client";
 
-import type { MouseEvent } from "react";
-
 const items = [
   { id: "top", no: "01", label: "首页" },
   { id: "about", no: "02", label: "关于我" },
@@ -11,37 +9,24 @@ const items = [
 ];
 
 export default function SectionNav() {
-  const jumpToSection = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
-    const section = document.getElementById(id);
-    if (!section) return;
-
-    event.preventDefault();
-    document.documentElement.classList.remove("is-opening");
-    const openingOverlay = document.querySelector<HTMLElement>(".opening-overlay");
-    if (openingOverlay) openingOverlay.style.display = "none";
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    section.scrollIntoView({
-      behavior: reducedMotion ? "auto" : "smooth",
-      block: "start",
-    });
-    event.currentTarget.blur();
-  };
-
   return (
     <nav className="section-nav" aria-label="作品集章节导航">
       <div className="section-nav-inner shell">
-        <a className="section-nav-brand" href="#top" aria-label="返回首页" onClick={(event) => jumpToSection(event, "top")}>
+        <a className="section-nav-brand" href="#top" aria-label="返回首页">
           <span>✳</span> LXW / INDEX
         </a>
         <div className="section-nav-links">
           {items.map((item) => (
-            <a href={`#${item.id}`} onClick={(event) => jumpToSection(event, item.id)} key={item.id}>
+            <a
+              href={`#${item.id}`}
+              key={item.id}
+            >
               <small>{item.no}</small>
               <span>{item.label}</span>
             </a>
           ))}
         </div>
-        <span className="section-nav-note">JUMP / MENU ↘</span>
+        <span className="section-nav-note">SCROLL / MENU ↘</span>
       </div>
     </nav>
   );

@@ -49,7 +49,13 @@ export default function MotionSystem() {
           desktop: boolean;
         };
 
-        if (reduced || !motion) {
+        const returningToSection = Boolean(
+          window.location.hash ||
+          document.documentElement.dataset.skipOpening === "true" ||
+          sessionStorage.getItem("portfolio-scroll-target"),
+        );
+
+        if (reduced || !motion || returningToSection) {
           releaseOpeningLock();
           gsap.set(overlay, { display: "none" });
           return;

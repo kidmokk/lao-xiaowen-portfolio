@@ -65,9 +65,18 @@ export default function ScrollNavigation() {
     document.addEventListener("click", handleAnchorClick, true);
     window.addEventListener("pageshow", releaseScrollLock);
 
-    const requestedTarget = window.location.hash.slice(1) || sessionStorage.getItem(STORAGE_KEY) || "";
+    const storedTarget = sessionStorage.getItem(STORAGE_KEY) || "";
+    const requestedTarget = window.location.hash.slice(1) || storedTarget;
     if (requestedTarget) {
-      sessionStorage.removeItem(STORAGE_KEY);
+      if (storedTarget) {
+        document.documentElement.dataset.skipOpening = "true";
+        window.setTimeout(() => {
+          sessionStorage.removeItem(STORAGE_KEY);
+          delete document.documentElement.dataset.skipOpening;
+        }, 2000);
+      } else {
+        sessionStorage.removeItem(STORAGE_KEY);
+      }
       releaseScrollLock();
       requestAnimationFrame(() => scrollToSection(requestedTarget, "auto"));
     }

@@ -60,7 +60,7 @@ const projects = [
       <div className="single-cover single-cover-comic" aria-hidden="true">
         <ProjectLoopVideo
           src="/aigc-comic-loop.mp4"
-          mobileSrc="/aigc-comic-loop-mobile.mp4"
+          mobileSrc="/aigc-comic-loop-mobile.mp4?v=2"
           poster="/aigc-comic-flight.webp"
         />
         <div className="cover-index">03 / FRAME &amp; STORY</div>

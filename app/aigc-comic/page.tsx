@@ -70,7 +70,7 @@ export default function AigcComicPage() {
           <div className="aigc-hero-film">
             <ProjectLoopVideo
               src="/aigc-comic-loop.mp4"
-              mobileSrc="/aigc-comic-loop-mobile.mp4"
+              mobileSrc="/aigc-comic-loop-mobile.mp4?v=2"
               poster="/aigc-comic-flight.webp"
             />
             <span>SHOWREEL / AUTO LOOP</span>
@@ -108,7 +108,7 @@ export default function AigcComicPage() {
                   <div className="aigc-film-frame">
                     <ProjectLoopVideo
                       src={film.src}
-                      mobileSrc={film.src.replace(".mp4", "-mobile.mp4")}
+                      mobileSrc={film.src.replace(".mp4", "-mobile.mp4?v=2")}
                       poster={film.poster}
                     />
                     <span className="aigc-film-status">AUTO LOOP ●</span>

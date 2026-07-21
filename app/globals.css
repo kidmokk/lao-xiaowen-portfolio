@@ -1,3 +1,21 @@
+@font-face {
+  font-family: "ZCOOL KuaiLe";
+  src: url("/zcool-kuaile-portfolio-latin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0000-024F;
+}
+
+@font-face {
+  font-family: "ZCOOL KuaiLe";
+  src: url("/zcool-kuaile-portfolio-cjk.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+2000-FFFF;
+}
+
 :root {
   --ink: #111317;
   --muted: #626873;

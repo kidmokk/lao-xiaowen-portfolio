@@ -58,7 +58,11 @@ const projects = [
     coverLabel: "AIGC × COMIC",
     visual: (
       <div className="single-cover single-cover-comic" aria-hidden="true">
-        <ProjectLoopVideo src="/aigc-comic-loop.mp4" poster="/aigc-comic-flight.webp" />
+        <ProjectLoopVideo
+          src="/aigc-comic-loop.mp4"
+          mobileSrc="/aigc-comic-loop-mobile.mp4"
+          poster="/aigc-comic-flight.webp"
+        />
         <div className="cover-index">03 / FRAME &amp; STORY</div>
       </div>
     ),

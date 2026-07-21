@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import "@fontsource/zcool-kuaile";
 import "./globals.css";
 import ScrollNavigation from "./ScrollNavigation";
 

@@ -79,6 +79,8 @@ export default function MotionSystem() {
           },
         });
 
+        if (!desktop) opening.timeScale(1.6);
+
         opening
           .from(".opening-meta > *", {
             y: 24,

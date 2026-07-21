@@ -9,8 +9,10 @@ type ProjectLoopVideoProps = {
 
 export default function ProjectLoopVideo({ src, poster }: ProjectLoopVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const isNearRef = useRef(false);
+  const isVisibleRef = useRef(false);
   const shouldLoadRef = useRef(false);
+  const allowAutoPlayRef = useRef(true);
+  const userWantsPlaybackRef = useRef(false);
   const [shouldLoad, setShouldLoad] = useState(false);
 
   useEffect(() => {
@@ -19,29 +21,35 @@ export default function ProjectLoopVideo({ src, poster }: ProjectLoopVideoProps)
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
-    if (reducedMotion || saveData) return;
+    allowAutoPlayRef.current = !reducedMotion && !saveData;
+
+    const syncPlayback = () => {
+      const shouldPlay = isVisibleRef.current
+        && document.visibilityState === "visible"
+        && video.currentSrc
+        && (allowAutoPlayRef.current || userWantsPlaybackRef.current);
+
+      if (shouldPlay) void video.play().catch(() => undefined);
+      else video.pause();
+    };
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        isNearRef.current = entry.isIntersecting;
-        if (entry.isIntersecting) {
+        const isNear = entry.isIntersecting;
+        isVisibleRef.current = isNear && entry.intersectionRatio >= 0.2;
+
+        if (isNear && allowAutoPlayRef.current) {
           if (!shouldLoadRef.current) {
             shouldLoadRef.current = true;
             setShouldLoad(true);
-          } else {
-            void video.play().catch(() => undefined);
           }
-        } else {
-          video.pause();
         }
+        syncPlayback();
       },
-      { rootMargin: "96px 0px", threshold: 0.02 },
+      { rootMargin: "0px", threshold: [0.01, 0.2] },
     );
 
-    const handleVisibility = () => {
-      if (document.visibilityState !== "visible") video.pause();
-      else if (isNearRef.current && shouldLoadRef.current) void video.play().catch(() => undefined);
-    };
+    const handleVisibility = () => syncPlayback();
 
     observer.observe(video);
     document.addEventListener("visibilitychange", handleVisibility);
@@ -56,22 +64,64 @@ export default function ProjectLoopVideo({ src, poster }: ProjectLoopVideoProps)
     const video = videoRef.current;
     if (!video || !shouldLoad) return;
     video.load();
-    if (isNearRef.current) void video.play().catch(() => undefined);
+    if (
+      isVisibleRef.current
+      && document.visibilityState === "visible"
+      && (allowAutoPlayRef.current || userWantsPlaybackRef.current)
+    ) {
+      void video.play().catch(() => undefined);
+    }
   }, [shouldLoad]);
+
+  const requestPlayback = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (!shouldLoadRef.current) {
+      shouldLoadRef.current = true;
+      userWantsPlaybackRef.current = true;
+      setShouldLoad(true);
+      return;
+    }
+
+    if (video.paused) {
+      userWantsPlaybackRef.current = true;
+      void video.play().catch(() => undefined);
+    } else {
+      userWantsPlaybackRef.current = false;
+      video.pause();
+    }
+  };
 
   return (
     <video
       ref={videoRef}
       className="project-loop-video"
       poster={poster}
+      autoPlay={shouldLoad && allowAutoPlayRef.current}
       muted
       loop
       playsInline
       preload={shouldLoad ? "metadata" : "none"}
       onCanPlay={(event) => {
-        if (isNearRef.current) void event.currentTarget.play().catch(() => undefined);
+        if (
+          isVisibleRef.current
+          && document.visibilityState === "visible"
+          && (allowAutoPlayRef.current || userWantsPlaybackRef.current)
+        ) {
+          void event.currentTarget.play().catch(() => undefined);
+        }
       }}
-      aria-hidden="true"
+      onClick={requestPlayback}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          requestPlayback();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label="播放或暂停视频"
     >
       {shouldLoad ? <source src={src} type="video/mp4" /> : null}
     </video>

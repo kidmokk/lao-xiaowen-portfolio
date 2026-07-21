@@ -10,8 +10,28 @@ type ProjectLoopVideoProps = {
 
 const ACTIVE_VIDEO_EVENT = "portfolio:project-video-active";
 const REEVALUATE_VIDEO_EVENT = "portfolio:project-video-reevaluate";
+let activeProjectVideo: HTMLVideoElement | null = null;
 
-function playExclusively(video: HTMLVideoElement) {
+function visibilityScore(video: HTMLVideoElement) {
+  const rect = video.getBoundingClientRect();
+  const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
+  const visibleRatio = rect.height > 0 ? visibleHeight / rect.height : 0;
+  const centerDistance = Math.abs((rect.top + rect.bottom) / 2 - window.innerHeight / 2) / window.innerHeight;
+  return visibleRatio - centerDistance * 0.15;
+}
+
+function playExclusively(video: HTMLVideoElement, force = false) {
+  if (
+    !force
+    && activeProjectVideo
+    && activeProjectVideo !== video
+    && !activeProjectVideo.paused
+    && visibilityScore(activeProjectVideo) > visibilityScore(video) + 0.04
+  ) {
+    return;
+  }
+
+  activeProjectVideo = video;
   document.dispatchEvent(new CustomEvent<HTMLVideoElement>(ACTIVE_VIDEO_EVENT, { detail: video }));
   void video.play().catch(() => undefined);
 }
@@ -22,6 +42,7 @@ export default function ProjectLoopVideo({ src, mobileSrc, poster }: ProjectLoop
   const shouldLoadRef = useRef(false);
   const allowAutoPlayRef = useRef(true);
   const userWantsPlaybackRef = useRef(false);
+  const syncPlaybackRef = useRef<() => void>(() => undefined);
   const [shouldLoad, setShouldLoad] = useState(false);
 
   useEffect(() => {
@@ -33,30 +54,40 @@ export default function ProjectLoopVideo({ src, mobileSrc, poster }: ProjectLoop
     allowAutoPlayRef.current = !reducedMotion && !saveData;
 
     const syncPlayback = () => {
+      const hasEnoughData = video.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA;
       const shouldPlay = isVisibleRef.current
         && document.visibilityState === "visible"
         && video.currentSrc
-        && (allowAutoPlayRef.current || userWantsPlaybackRef.current);
+        && (userWantsPlaybackRef.current || (allowAutoPlayRef.current && hasEnoughData));
 
-      if (shouldPlay) playExclusively(video);
-      else video.pause();
+      if (shouldPlay) {
+        if (video.paused) playExclusively(video);
+      } else {
+        video.pause();
+      }
     };
+    syncPlaybackRef.current = syncPlayback;
 
-    const observer = new IntersectionObserver(
+    const playbackObserver = new IntersectionObserver(
       ([entry]) => {
-        const isNear = entry.isIntersecting;
         const wasVisible = isVisibleRef.current;
-        isVisibleRef.current = isNear && entry.intersectionRatio >= 0.2;
-        if (isNear && allowAutoPlayRef.current && !shouldLoadRef.current) {
-          shouldLoadRef.current = true;
-          setShouldLoad(true);
-        }
+        isVisibleRef.current = entry.isIntersecting && entry.intersectionRatio >= 0.2;
         syncPlayback();
         if (wasVisible && !isVisibleRef.current) {
           document.dispatchEvent(new Event(REEVALUATE_VIDEO_EVENT));
         }
       },
-      { rootMargin: "0px", threshold: [0.01, 0.2] },
+      { rootMargin: "0px", threshold: [0.01, 0.2, 0.5, 0.8, 1] },
+    );
+
+    const preloadObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && allowAutoPlayRef.current && !shouldLoadRef.current) {
+          shouldLoadRef.current = true;
+          setShouldLoad(true);
+        }
+      },
+      { rootMargin: "280px 0px", threshold: 0.01 },
     );
 
     const handleVisibility = () => syncPlayback();
@@ -65,21 +96,25 @@ export default function ProjectLoopVideo({ src, mobileSrc, poster }: ProjectLoop
       if (activeVideo !== video) video.pause();
     };
     const handlePlay = () => {
+      activeProjectVideo = video;
       document.dispatchEvent(new CustomEvent<HTMLVideoElement>(ACTIVE_VIDEO_EVENT, { detail: video }));
     };
     const handleReevaluatePlayback = () => syncPlayback();
-    observer.observe(video);
+    playbackObserver.observe(video);
+    preloadObserver.observe(video);
     document.addEventListener(ACTIVE_VIDEO_EVENT, handleExclusivePlayback);
     document.addEventListener(REEVALUATE_VIDEO_EVENT, handleReevaluatePlayback);
     video.addEventListener("play", handlePlay);
     document.addEventListener("visibilitychange", handleVisibility);
     return () => {
-      observer.disconnect();
+      playbackObserver.disconnect();
+      preloadObserver.disconnect();
       document.removeEventListener(ACTIVE_VIDEO_EVENT, handleExclusivePlayback);
       document.removeEventListener(REEVALUATE_VIDEO_EVENT, handleReevaluatePlayback);
       video.removeEventListener("play", handlePlay);
       document.removeEventListener("visibilitychange", handleVisibility);
       video.pause();
+      if (activeProjectVideo === video) activeProjectVideo = null;
     };
   }, []);
 
@@ -87,13 +122,6 @@ export default function ProjectLoopVideo({ src, mobileSrc, poster }: ProjectLoop
     const video = videoRef.current;
     if (!video || !shouldLoad) return;
     video.load();
-    if (
-      isVisibleRef.current
-      && document.visibilityState === "visible"
-      && (allowAutoPlayRef.current || userWantsPlaybackRef.current)
-    ) {
-      playExclusively(video);
-    }
   }, [shouldLoad]);
 
   const requestPlayback = () => {
@@ -108,7 +136,7 @@ export default function ProjectLoopVideo({ src, mobileSrc, poster }: ProjectLoop
 
     if (video.paused) {
       userWantsPlaybackRef.current = true;
-      playExclusively(video);
+      playExclusively(video, true);
     } else {
       userWantsPlaybackRef.current = false;
       video.pause();
@@ -120,20 +148,16 @@ export default function ProjectLoopVideo({ src, mobileSrc, poster }: ProjectLoop
       ref={videoRef}
       className="project-loop-video"
       poster={poster}
-      autoPlay={shouldLoad && allowAutoPlayRef.current}
       muted
       loop
       playsInline
-      preload={shouldLoad ? "metadata" : "none"}
+      preload={shouldLoad ? "auto" : "none"}
       onCanPlay={(event) => {
-        if (
-          isVisibleRef.current
-          && document.visibilityState === "visible"
-          && (allowAutoPlayRef.current || userWantsPlaybackRef.current)
-        ) {
-          playExclusively(event.currentTarget);
+        if (userWantsPlaybackRef.current && isVisibleRef.current) {
+          playExclusively(event.currentTarget, true);
         }
       }}
+      onCanPlayThrough={() => syncPlaybackRef.current()}
       onClick={requestPlayback}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {

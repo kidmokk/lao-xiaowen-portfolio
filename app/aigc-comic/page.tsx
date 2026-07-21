@@ -68,7 +68,11 @@ export default function AigcComicPage() {
             <p>从角色、镜头、氛围到连续动态影像，探索 AIGC 在动画叙事中的视觉可能。</p>
           </div>
           <div className="aigc-hero-film">
-            <ProjectLoopVideo src="/aigc-comic-loop.mp4" poster="/aigc-comic-flight.webp" />
+            <ProjectLoopVideo
+              src="/aigc-comic-loop.mp4"
+              mobileSrc="/aigc-comic-loop-mobile.mp4"
+              poster="/aigc-comic-flight.webp"
+            />
             <span>SHOWREEL / AUTO LOOP</span>
           </div>
           <div className="aigc-hero-badge"><small>SELECTED</small><strong>03</strong><span>SERIES</span></div>
@@ -102,7 +106,11 @@ export default function AigcComicPage() {
               {item.films.map((film, index) => (
                 <figure className={`aigc-film aigc-film-${index + 1}`} key={film.src}>
                   <div className="aigc-film-frame">
-                    <ProjectLoopVideo src={film.src} poster={film.poster} />
+                    <ProjectLoopVideo
+                      src={film.src}
+                      mobileSrc={film.src.replace(".mp4", "-mobile.mp4")}
+                      poster={film.poster}
+                    />
                     <span className="aigc-film-status">AUTO LOOP ●</span>
                     <i className="aigc-film-corner aigc-film-corner-a" />
                     <i className="aigc-film-corner aigc-film-corner-b" />
